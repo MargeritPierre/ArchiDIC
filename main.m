@@ -1,4 +1,7 @@
 %% THIS IS A MINIMUM WORKING EXAMPLE
+    clear all
+    close all
+    clc
 
 %% INCLUDE ALL THE NECESSARY FILES
     [path,~,~] = fileparts(matlab.desktop.editor.getActiveFilename) ;
@@ -7,5 +10,8 @@
 %% MESH GENERATION SCRIPT
     run buildDistMesh
 
-%% GLOBAL DIC
+%% MICROSCOPIC MEASUREMENTS
     run globalDIC
+
+%% MACROSCOPIC MEASUREMENTS
+    run localDIC

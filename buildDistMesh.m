@@ -21,12 +21,13 @@
 % Create the figure
     fig = figure ;
     ax = axes('Outerposition',[0 0 1 1]) ;
+        hold on ;
         axis(ax,'equal')
         axis(ax,'tight')
     im = image(refImg) ;
 % Rectangular Region Of Interest
     roi = drawrectangle(ax,'Position',roiPosition,'FaceAlpha',0) ;
-% Substract the background gray level to the image
+% Substract the background gray level from the image
     % Function
         substractBackground = @(pt)abs(refImg-refImg(round(pt(2)),round(pt(1)),:)) ;
     % Reference point for the background gray level
@@ -92,7 +93,7 @@
 %% SAVE THE MESH
     Nodes = p ;
     Elems = t ;
-    save(['data' filesep 'Mesh.mat'],'Nodes','Elems') ;
+    save(['data' filesep 'distMesh.mat'],'Nodes','Elems') ;
     
 
         
