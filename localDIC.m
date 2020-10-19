@@ -230,7 +230,7 @@
         callbackFcn() ;
         
 %% SAVE THE RESULTS
-    save(['data' filesep 'globalDIC.mat'],'mesh','DataFields') ;
+    save(['data' filesep 'localDIC.mat'],'mesh','DataFields') ;
 
 
 
