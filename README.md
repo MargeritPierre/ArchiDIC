@@ -22,7 +22,8 @@ Starting from an image `I` of the geometry, the Region Of Interest (or mesh inte
 It is created in three steps:
 1. Substraction of the image background gray level `b = I[refPt]` so that `I = abs(I-b)`
 2. Initialize the mast `M` by gray level thresholding using `M = I>t`
-3. Order-statistic filtering of the mask with `M = `[`ordfilt2`](https://fr.mathworks.com/help/images/ref/ordfilt2.html)`(M,ord,K)`, which is equivalent to `M = conv2(M,K)>=ord`. The binary filter kernel `K` is a disk of radius `R`
+3. Order-statistic filtering of the mask with `M = ordfilt2(M,ord,K)`, which is equivalent to `M = conv2(M,K)>=ord` ; the binary filter kernel `K` is a disk of radius `R`.
+
 The parameters of the procedure are then the reference frame `I`, the reference background point `refPt`, the threshold value `t`, the statistical order `ord` as well as the kernel radius `R`. 
 
 ### Computation of the `Signed Distance Function`
