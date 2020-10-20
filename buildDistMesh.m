@@ -18,8 +18,14 @@
     grayLevelThreshold = 0.075 ;
     maskColor = [1 0 0] ;
     maskAlpha = 0.5 ;
+    uiHeight = 0.04 ;
+    uiMargin = 0.005 ;
 % Create the figure
     fig = figure ;
+        fig.NumberTitle = 'off' ;
+        fig.Name = 'MASK CREATION: select ROI, substract background and apply threshold' ;
+        fig.MenuBar = 'none' ; 
+        fig.ToolBar = 'none' ;
     ax = axes('Outerposition',[0 0 1 1]) ;
         hold on ;
         axis(ax,'equal')
@@ -39,7 +45,7 @@
     % Function
         maskFun = @(t)all(im.CData>t,3) ;
     % slider
-        tSlider = uicontrol(fig,'style','slider','units','normalized','position',[0 0 1 0.02],'min',0,'max',1,'value',grayLevelThreshold) ;
+        tSlider = uicontrol(fig,'style','slider','units','normalized','position',[0 1-uiHeight 1 uiHeight] + uiMargin*[1 1 -2 -2],'min',0,'max',1,'value',grayLevelThreshold) ;
     % graphical representation of the mask
         maskIm = image(repmat(reshape(maskColor,[1 1 3]),[nI nJ])) ;
         maskIm.AlphaData = maskFun(tSlider.Value)*maskAlpha ;
