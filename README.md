@@ -59,7 +59,7 @@ In addition to the level-set function `fd(p)`, the [DistMesh](http://persson.ber
 
 The mesh generation procedure begins by populating the geometry with a given distribution of points `p0` of approximative density `h0`. Starting from this *initial* configuration, the mesh is *relaxed* by solving a truss-like non-linear static force equilibrium with an *explicit scheme*:
 
-1. Trangular elements defined as a [Delaunay triagulation](https://en.wikipedia.org/wiki/Delaunay_triangulation) of the *current configuration* `p`
+1. Trangular elements defined as a [Delaunay triangulation](https://en.wikipedia.org/wiki/Delaunay_triangulation) of the *current configuration* `p`
 2. Elements laying *oustide* the geometry, such that `fd(centroid)>deps`, are deleted
 3. The *configuration update* `dp` is computed using the difference between the *current edge length* `L` and the *target* edge length `fh`
 4. The points `p = p + deltat*dp` that belong to the mesh boundaries are projected back to the level-set
