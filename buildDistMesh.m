@@ -108,10 +108,12 @@
     fh = @(p)huniform(p)*edgeLength ;
 % Interpolated distance function
     fd = @(p)bilinearInterp(DIST,p-bbox(1,:)+1) ;
+% Initial edge length
+    h0 = edgeLength ;
+% Fixed points (for eventual features)
+    pFix = [] ;
 % Compute the distmesh
-    profile on
-    [p,t] = distmesh2d_modif(fd,fh,edgeLength,bbox,[]) ;
-    profile off
+    [p,t] = distmesh2d_modif(fd,fh,h0,bbox,pFix) ;
     
 %% SAVE THE MESH
     Nodes = p ;

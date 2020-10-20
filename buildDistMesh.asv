@@ -1,7 +1,7 @@
 %% THIS SCRIPTS SHOWS HOW TO BUILD A TRIANGULATED MESH 
 % USING DISTMESH APPLIED ON A REFERENCE IMAGE
 
-%% MASK CREATION
+%% MASK CREATION GUI
 % Clear the workspace
     close all
     clearvars
@@ -16,13 +16,16 @@
     roiPosition = [72 77 734 587] ; [1 1 nJ-1 nI-1] ;
     refPtPosition = [435 364] ; [nJ nI]/2 ;
     grayLevelThreshold = 0.075 ;
+% Display parameters
     maskColor = [1 0 0] ;
     maskAlpha = 0.5 ;
     uiHeight = 0.04 ;
+    lblWidth = 0.3 ;
     uiMargin = 0.005 ;
 % Create the figure
     [fig,ax] = initFigure() ;
-    fig.Name = 'MASK CREATION: select ROI, substract background and apply threshold' ;
+    fig.Name = 'MASK CREATION' ;
+    ax.OuterPosition(4) = 1-3*uiHeight ;
 % Reference image 
     im = image(refImg) ;
 % Mask image
@@ -32,56 +35,52 @@
 % Reference point for the background gray level
     refPt = drawpoint(ax,'Position',refPtPosition) ;
 % Slider for the threshold value
+    tLabel = uicontrol(fig,'style','text'...
+                            ,'units','normalized'...
+                            ,'position',[0 1-uiHeight lblWidth uiHeight] + uiMargin*[1 1 -2 -2]) ;
     tSlider = uicontrol(fig,'style','slider'...
                             ,'units','normalized'...
-                            ,'position',[0 1-uiHeight 1 uiHeight] + uiMargin*[1 1 -2 -2]...
+                            ,'position',[lblWidth 1-uiHeight 1-lblWidth uiHeight] + uiMargin*[1 1 -2 -2]...
                             ,'min',0,'max',1,'value',grayLevelThreshold) ;
 % Slider for the filter kernel radius
+    RLabel = uicontrol(fig,'style','text'...
+                            ,'units','normalized'...
+                            ,'position',[0 1-2*uiHeight lblWidth uiHeight] + uiMargin*[1 1 -2 -2]) ;
     RSlider = uicontrol(fig,'style','slider'...
                             ,'units','normalized'...
-                            ,'position',[0 1-2*uiHeight 1 uiHeight] + uiMargin*[1 1 -2 -2]...
+                            ,'position',[lblWidth 1-2*uiHeight 1-lblWidth uiHeight] + uiMargin*[1 1 -2 -2]...
                             ,'min',1,'max',20,'value',10) ;
 % Slider for the filter kernel order
+    ordLabel = uicontrol(fig,'style','text'...
+                            ,'units','normalized'...
+                            ,'position',[0 1-3*uiHeight lblWidth uiHeight] + uiMargin*[1 1 -2 -2]) ;
     ordSlider = uicontrol(fig,'style','slider'...
                             ,'units','normalized'...
-                            ,'position',[0 1-3*uiHeight 1 uiHeight] + uiMargin*[1 1 -2 -2]...
+                            ,'position',[lblWidth 1-3*uiHeight 1-lblWidth uiHeight] + uiMargin*[1 1 -2 -2]...
                             ,'min',0,'max',1,'value',0.58) ;
-% Image processing functions
-    refGrayLevel = @()refImg(round(refPt.Position(2)),round(refPt.Position(1)),:) ;
-    substractBackground = @()abs(refImg-refGrayLevel()) ;
-    applyThreshold = @()all(substractBackground()>tSlider.Value,3) ;
-    filterKernel = @(R)( ((-R:R).^2)' + (-R:R).^2 )<=R.^2 ;
-    filterOrder = @()round(ordSlider.Value*sum(reshape(filterKernel(RSlider.Value),[],1))) ;
-    orderFilter = ordfilt2(applyThreshold(),filterOrder(),filterKernel(RSlider.Value)) ;
-% Listeners
-    callbackFcn = @(src,evt)cellfun(@(c)c(),{...
-                        @()set(im,'cdata',substractBackground()) ...
-                        @()set(maskIm,'alphadata',orderFilter()*maskAlpha) ...
-                    }) ;
-    addlistener(refPt,'MovingROI',@(src,evt)set(im,'cdata',substractBackground(src.Position))) ;
-% MASK: Image thresholding
-    % Function
-        maskFun = @(t)all(im.CData>t,3) ;
-    % slider
-    % graphical representation of the mask
-        maskIm = image(repmat(reshape(maskColor,[1 1 3]),[nI nJ])) ;
-        maskIm.AlphaData = maskFun(tSlider.Value)*maskAlpha ;
-    % listen to the slider
-        addlistener(tSlider,'Value','PostSet',@(src,evt)set(maskIm,'alphadata',maskFun(tSlider.Value)*maskAlpha)) ;
-    drawnow ;
-
-%% MEDIAN FILTERING OF THE MASK
-    Rf = 10 ; order = round(pi*Rf.^2/1.7) ;
-% Round mask filter
-    filtMask = ( ((-Rf:Rf).^2)' + (-Rf:Rf).^2 )<=Rf.^2 ;
-    MASK = ordfilt2(maskFun(tSlider.Value),order,filtMask) ;
+% UI Listeners
+    uiMask = @()img2mask(refImg,refPt.Position,roi.Position,tSlider.Value,RSlider.Value,ordSlider.Value) ;
+    callbackFcn = @()cellfun(@(c)c(),{...
+                        set(maskIm,'alphadata',uiMask()*maskAlpha) ...
+                        set(tLabel,'string',['Gray level threshold: ' num2str(tSlider.Value)]) ...
+                        set(RLabel,'string',['Filter Radius: ' num2str(round(RSlider.Value))]) ...
+                        set(ordLabel,'string',['Filter order: ' num2str(round(ordSlider.Value)*100) '%']) ...
+                        },'UniformOutput',false) ;
+    addlistener(roi,'MovingROI',@(src,evt)callbackFcn()) ;
+    addlistener(refPt,'MovingROI',@(src,evt)callbackFcn()) ;
+    addlistener(tSlider,'Value','PostSet',@(src,evt)callbackFcn()) ;
+    addlistener(RSlider,'Value','PostSet',@(src,evt)callbackFcn()) ;
+    addlistener(ordSlider,'Value','PostSet',@(src,evt)callbackFcn()) ;
 % Display
-    maskIm.AlphaData = MASK*0.5 ;
+    callbackFcn() ;
     drawnow ;
 
 %% LEVEL SET FUNCTION DEFINITION
+% Parameters
+    margin = 50 ; 
+% Retrieve the mask
+    MASK = uiMask() ;
 % Bounding box
-    margin = 50 ;
     bbox = round(roi.Position) ;
     bbox = bbox(1:2)+[0;1]*bbox(3:4) + [-1;1]*margin ;
     jj = bbox(1,1):bbox(2,1) ;
@@ -99,7 +98,8 @@
 % Display
     tag = 'lvlstimg' ;
     delete(findobj(fig,'tag',tag)) ;
-    distIm = imagesc(jj,ii,DIST,'tag',tag) ;
+    distIm = imagesc(jj,ii,DIST,'tag',tag,'AlphaData',0.75) ;
+    colorbar ;
     drawnow
     
 %% MESH CONSTRUCTION
@@ -108,10 +108,10 @@
     fh = @(p)huniform(p)*edgeLength ;
 % Interpolated distance function
     fd = @(p)bilinearInterp(DIST,p-bbox(1,:)+1) ;
+% Initial edge length
+    eh
 % Compute the distmesh
-    profile on
     [p,t] = distmesh2d_modif(fd,fh,edgeLength,bbox,[]) ;
-    profile off
     
 %% SAVE THE MESH
     Nodes = p ;
