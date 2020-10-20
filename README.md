@@ -24,7 +24,11 @@ It is created in three steps:
 2. Initialize the mast `M` by gray level thresholding using `M = I>t`
 3. Order-statistic filtering of the mask with `M = ordfilt2(M,ord,K)`, which is equivalent to `M = conv2(M,K)>=ord` ; the binary filter kernel `K` is a disk of radius `R`.
 
-The parameters of the procedure are then the reference frame `I`, the reference background point `refPt`, the threshold value `t`, the statistical order `ord` as well as the kernel radius `R`. 
+The parameters of the procedure are then the reference frame `I`, the reference background point `refPt`, the threshold value `t`, the statistical order `ord` as well as the kernel radius `R`.
+
+<p align="center"> 
+  <img alt="Screenshot: Mask Creation Figure" src="doc/MASK.svg" width="800"/> 
+</p>
 
 ### Computation of the `Signed Distance Function`
 
