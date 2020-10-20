@@ -202,7 +202,7 @@
         uiHeight = 0.03 ;
         popupWidth = 0.25 ;
         fig = clf('reset') ;
-        fig.Name = 'Global DIC: Results' ;
+        fig.Name = 'Local DIC: Results' ;
         ax = axes('Outerposition',[0 0 1 1]) ;
             hold on
             im = image(repmat(refImg,[1 1 3])) ;
