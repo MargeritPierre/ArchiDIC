@@ -70,9 +70,12 @@ This procedure is repeated *until convergence*, i.e as long as `norm(dp)>dptol`.
   <img alt="Screenshot: DistMesh" src="doc/DistMesh.png" width="500"/> 
 </p>
 
+The parameters `deps`, `deltat` and `dptol` are setted on the `distmesh2d` procedure. In order to be adapted to the present applications, some minor modifications have been done on the original script; the file now used to generate the mesh is `functions/distmesh2d_modif`.
+
+
 
 ## Digital Image Correlation: generalities
-
+*work in progress..*
 
 ## Global DIC
 
