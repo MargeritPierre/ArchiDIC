@@ -46,10 +46,29 @@ In the present case, `fd(p)` is defined as the bilinear interpolation of a *Sign
   <img alt="Screenshot: Signed Distance Image" src="doc/SDI.svg" width="500"/> 
 </p>
 
-where a `margin` is added in order to avoid *leaks* of points to close to boundaries during mesh generation.
+where a `margin` is added in order to avoid *leaks* of points too close to boundaries during mesh generation.
 
 
-### Meshing
+### Generation of the `Mesh`
+
+In addition to the level-set function `fd(p)`, the [DistMesh](http://persson.berkeley.edu/distmesh/) procedure takes several other arguments:
+- a *density function* `fh(p)` that returns, for any point `p` , the *target local edge length* 
+- an *intial* density value `h0` that is used to populate the mesh at the beginning of the procedure
+- the *bounding box* `bbox`: any points going outside is culled
+- an optionnal list of *fixed points* `pFix` that can be used to sample special features, clamps, etc.
+
+The mesh generation procedure begins by populating the geometry with a given distribution of points `p0` of approximative density `h0`. Starting from this *initial* configuration, the mesh is *relaxed* by solving a truss-like non-linear static force equilibrium with an *explicit scheme*:
+
+1. Trangular elements defined as a [Delaunay triagulation](https://en.wikipedia.org/wiki/Delaunay_triangulation) of the *current configuration* `p`
+2. Elements laying *oustide* the geometry, such that `fd(centroid)>deps`, are deleted
+3. The *configuration update* `dp` is computed using the difference between the *current edge length* `L` and the *target* edge length `fh`
+4. The points `p = p + deltat*dp` that belong to the mesh boundaries are projected back to the level-set
+
+This procedure is repeated *until convergence*, i.e as long as `norm(dp)>dptol`. An example of obtained mesh is shown below:
+
+<p align="center"> 
+  <img alt="Screenshot: DistMesh" src="doc/DistMesh.png" width="500"/> 
+</p>
 
 
 ## Digital Image Correlation: generalities
