@@ -14,25 +14,40 @@
 
 
 ## Meshing the structure using a reference image
+
 This procedure is intended to mesh complex geometries using a reference picture that is used to extract the object's boundaries.
 It makes use of the [DistMesh](http://persson.berkeley.edu/distmesh/) procedure by Per-Olof Persson to produce high-quality triangulations of the geometry.
 
+
 ### Extraction of the `Region Of Interest`
+
 Starting from an image `I` of the geometry, the Region Of Interest (or mesh interior domain) consists in a *binary mask* with 1's *inside* the geometry and 0's *outside*.
 It is created in three steps:
 1. Substraction of the image background gray level `b = I[refPt]` so that `I = abs(I-b)`
 2. Initialize the mast `M` by gray level thresholding using `M = I>t`
 3. Order-statistic filtering of the mask with `M = ordfilt2(M,ord,K)`, which is equivalent to `M = conv2(M,K)>=ord` ; the binary filter kernel `K` is a disk of radius `R`.
 
-The parameters of the procedure are then the reference frame `I`, the reference background point `refPt`, the threshold value `t`, the statistical order `ord` as well as the kernel radius `R`. The first tree parameters can be chosen using a dedicated GUI:
+The parameters of the procedure are then the reference frame `I`, the reference background point `refPt`, the threshold value `t`, the statistical order `ord` as well as the kernel radius `R`. They can be tuned using the dedicated GUI:
 
 <p align="center"> 
-  <img alt="Screenshot: Mask Creation Figure" src="doc/MASK.svg" width="700"/> 
+  <img alt="Screenshot: Mask Creation Figure" src="doc/MASK.svg" width="800"/> 
 </p>
 
-where the binary mask `M` is represented by red pixels. The third step, order-statistic filtering, is applied separately as it represents a higher computational burden.
+where the resulting binary mask `M` is represented by red pixels.
+
 
 ### Computation of the `Signed Distance Function`
+
+The [DistMesh](http://persson.berkeley.edu/distmesh/) procedure uses a [level-set](https://en.wikipedia.org/wiki/Level_set) representation of the geometry boundaries: a *Signed Distance Function* `fd(p)` is defined for *any* point `p` so that `fd(p)<0` if `p` is *inside* the geometry, `fd(p)>0` if `p` is *outside* the geometry, and `abs(fd(p))` is the distance between `p` and the closest point to the boundaries. These boundaries are, as a consequence, defined by `fd(p)=0`.
+
+In the present case, `fd(p)` is defined as the bilinear interpolation of a *Signed Distance Image* (SDI). This SDI is computed from the mask obtained previously using the [Distance Transform](https://en.wikipedia.org/wiki/Distance_transform): `SDI = bwdist(MASK)-bwdist(~MASK)`. An example of such SDI is shown below:
+
+<p align="center"> 
+  <img alt="Screenshot: Signed Distance Image" src="doc/SDI.svg" width="500"/> 
+</p>
+
+where a `margin` is added in order to avoid *leaks* of points to close to boundaries during mesh generation.
+
 
 ### Meshing
 
