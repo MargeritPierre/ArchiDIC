@@ -98,7 +98,8 @@
 % Display
     tag = 'lvlstimg' ;
     delete(findobj(fig,'tag',tag)) ;
-    distIm = imagesc(jj,ii,DIST,'tag',tag) ;
+    distIm = imagesc(jj,ii,DIST,'tag',tag,'AlphaData',0.75) ;
+    colorbar ;
     drawnow
     
 %% MESH CONSTRUCTION
