@@ -11,6 +11,9 @@
 2. make this folder the MATLAB's `Current Folder`
 3. run `main.m`
 
+### How to cite the work ?
+Filippo Agnelli, Pierre Margerit, Paolo Celli, Chiara Daraio, Andrei Constantinescu,[ Systematic two-scale image analysis of extreme deformations in soft architectured sheets](https://www.sciencedirect.com/science/article/pii/S0020740320343101?), International Journal of Mechanical Sciences, 2020, 106205, ISSN 0020-7403.
+
 
 
 ## Meshing the structure using a reference image
