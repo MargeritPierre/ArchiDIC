@@ -89,9 +89,14 @@ delete(findobj(gca,'tag',tag)) ;                                    % For first 
 while 1
   count=count+1;
   % 3. Retriangulation by the Delaunay algorithm
-  if max(sqrt(sum((p-pold).^2,2))/h0)>ttol
+  invalidPoint = any(isnan(p) | isinf(p),2) ;
+  movedTooFar = max(sqrt(sum((p-pold).^2,2))/h0)>ttol ;
+  if any(invalidPoint) || movedTooFar
+    p(any(isnan(p),2),:) = [] ; %%%%%%%%%%%%%%
+    p(any(isinf(p),2),:) = [] ; %%%%%%%%%%%%%%
+    N=size(p,1);                                         % Number of points N
     pold=p;                                          % Save current positions
-    t=delaunayn(p);                                  % List of triangles
+    t=delaunay(p);                                  % List of triangles
     pmid=(p(t(:,1),:)+p(t(:,2),:)+p(t(:,3),:))/3;    % Compute centroids
     t=t(feval(fd,pmid,varargin{:})<-geps,:);         % Keep interior triangles
     % 4. Describe each bar by a unique pair of nodes
@@ -115,7 +120,7 @@ while 1
   L0=hbars*Fscale*sqrt(sum(L.^2)/sum(hbars.^2));     % L0 = Desired lengths
   
   % Density control - remove points that are too close
-  if mod(count,densityctrlfreq)==0 & any(L0>2*L)
+  if mod(count,densityctrlfreq)==0 && any(L0>2*L)
       p(setdiff(reshape(bars(L0>2*L,:),[],1),1:nfix),:)=[];
       N=size(p,1); pold=inf;
       continue;
@@ -135,7 +140,9 @@ while 1
   p(ix,:)=p(ix,:)-[d(ix).*dgradx./dgrad2,d(ix).*dgrady./dgrad2];    % Project
 
   % 8. Termination criterion: All interior nodes move less than dptol (scaled)
-  if max(sqrt(sum(deltat*Ftot(d<-geps,:).^2,2))/h0)<dptol, break; end
+  if max(sqrt(sum(deltat*Ftot(d<-geps,:).^2,2))/h0)<dptol
+      break; 
+  end
 end
 
 % Clean up and plot final mesh

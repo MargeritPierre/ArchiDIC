@@ -104,7 +104,7 @@
     
 %% MESH CONSTRUCTION
 % Mesh Density Function
-    edgeLength = 12 ;
+    edgeLength = 15 ;
     fh = @(p)huniform(p)*edgeLength ;
 % Interpolated distance function
     fd = @(p)bilinearInterp(DIST,p-bbox(1,:)+1) ;
