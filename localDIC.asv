@@ -67,24 +67,19 @@
     pos = pointsPosition(cornerPoly.Position) ;
     delete(cornerPoly) ;
     for pp = 1:size(pos,1) ; nodes(end+1) = drawpoint(ax,'Position',pos(pp,:)) ; end
-    valid = @()isvalid(nodes)' ;
+    valid = @()isvalid(nodes) ;
     validNodes = @()nodes(valid()) ;
-    validElems = @()(sparse(elems*0+(1:size(elems,1))',elems,1,size(elems,1),size(pos,1))*valid())==4 ;
     validNodePos = @()cat(1,validNodes().Position) ;
-    allPos = @()full(sparse([find(valid());find(~valid())].*[1 1],repmat([1 2],[size(pos,1) 1]),[validNodePos();find(~valid()).*[NaN NaN]])) ;
-    callback = @()set(pts,'vertices',allPos(),'faces',elems(validElems(),:)) ;
-    for pp = 1:size(pos,1) ; addlistener(nodes(pp),'MovingROI',@(src,evt)callback()) ; end
-    for pp = 1:size(pos,1) ; addlistener(nodes(pp),'ObjectBeingDestroyed',@(src,evt)callback()) ; end
+    allPos = @()sparse([find(valid());find(~valid())].*[1 1],repmat([1 2],[numel(pos,1) 1]),validNodePos
+    for pp = 1:size(pos,1) ; addlistener(nodes(pp),'MovingROI',@(src,evt)set(pts,'vertices',cat(1,nodes(isvalid(nodes)).Position))) ; end
     
 %% RECORD THE MESH AND DEFINE THE SUBDOMAIN SIZE
 % Parameters
     subDomSz = [1 1]*61 ; % in pixels, [X Y]
-% Retrieve mesh data
+% Retrieve mesh information
     mesh = [] ;
-    vv = ~any(isnan(pts.Vertices),2) ;
-    mesh.Nodes = pts.Vertices(vv,:) ;
-    newNodeIdx = cumsum(double(vv)) ;
-    mesh.Elems = newNodeIdx(pts.Faces) ;
+    mesh.Elems = elems ;
+    mesh.Nodes = pts.Vertices ;
     nElems = size(mesh.Elems,1) ;
     nNodes = size(mesh.Nodes,1) ;
 % Display Subdomains

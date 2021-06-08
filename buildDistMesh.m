@@ -13,7 +13,8 @@
     [nI,nJ,nC] = size(refImg) ;
     if nC<3 ; refImg = repmat(refImg(:,:,1),[1 1 3]) ; end
 % Parameters
-    roiPosition = [72 77 734 587] ; [1 1 nJ-1 nI-1] ;
+    roiType = 'poly' ; % 'rect' or 'poly'
+    roiPosition = [72 77 734 587] ; [1 1 nJ-1 nI-1] ; % [xmin ymin width height]
     refPtPosition = [435 364] ; [nJ nI]/2 ;
     grayLevelThreshold = 0.075 ;
 % Display parameters
@@ -30,8 +31,13 @@
     im = image(refImg) ;
 % Mask image
     maskIm = image(repmat(reshape(maskColor,[1 1 3]),[nI nJ])) ;
-% Rectangular Region Of Interest
-    roi = drawrectangle(ax,'Position',roiPosition,'FaceAlpha',0) ;
+% Region Of Interest
+    switch roiType
+        case 'rect'
+            roi = drawrectangle(ax,'Position',roiPosition,'FaceAlpha',0) ;
+        case 'poly'
+            roi = drawpolygon(ax,'Position',roiPosition(1:2) + [0 0 ; 1 0 ; 1 1 ; 0 1].*roiPosition(3:4) ,'FaceAlpha',0) ;
+    end
 % Reference point for the background gray level
     refPt = drawpoint(ax,'Position',refPtPosition) ;
 % Slider for the threshold value
@@ -61,10 +67,10 @@
 % UI Listeners
     uiMask = @()img2mask(refImg,refPt.Position,roi.Position,tSlider.Value,RSlider.Value,ordSlider.Value) ;
     callbackFcn = @()cellfun(@(c)c(),{...
-                        set(maskIm,'alphadata',uiMask()*maskAlpha) ...
-                        set(tLabel,'string',['Gray level threshold: ' num2str(tSlider.Value)]) ...
-                        set(RLabel,'string',['Filter Radius: ' num2str(round(RSlider.Value))]) ...
-                        set(ordLabel,'string',['Filter order: ' num2str(round(ordSlider.Value)*100) '%']) ...
+                        @()set(maskIm,'alphadata',uiMask()*maskAlpha) ...
+                        @()set(tLabel,'string',['Gray level threshold: ' num2str(tSlider.Value)]) ...
+                        @()set(RLabel,'string',['Filter Radius: ' num2str(round(RSlider.Value))]) ...
+                        @()set(ordLabel,'string',['Filter order: ' num2str(round(ordSlider.Value)*100) '%']) ...
                         },'UniformOutput',false) ;
     addlistener(roi,'MovingROI',@(src,evt)callbackFcn()) ;
     addlistener(refPt,'MovingROI',@(src,evt)callbackFcn()) ;
@@ -82,10 +88,15 @@
     MASK = uiMask() ;
 % Bounding box
     bbox = round(roi.Position) ;
-    bbox = bbox(1:2)+[0;1]*bbox(3:4) + [-1;1]*margin ;
+    switch roiType
+        case 'rect'
+            bbox = bbox(1:2)+[0;1]*bbox(3:4) ;
+        case 'poly'
+            bbox = [min(bbox,[],1) ; max(bbox,[],1)] ;
+    end
+    bbox = bbox + [-1;1]*margin ;
     jj = bbox(1,1):bbox(2,1) ;
     ii = bbox(1,2):bbox(2,2) ;
-    [JJ,II] = meshgrid(jj,ii) ;
 % ROI with margins
     ROI = MASK(max(min(ii,nI),1),max(min(jj,nJ),1)) ;
     ROI(:,1:margin) = 0 ;
